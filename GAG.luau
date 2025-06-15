@@ -1,5 +1,3 @@
--- if you are reading this then you are likely a skid i give full permission to skid off this :)
-
 if not game:IsLoaded() then
     repeat
         task.wait()
@@ -68,14 +66,36 @@ for i,v in pairs(EggModule) do
     table.insert(Eggs, i)
 end
 
+-- cosmetics
+
+local Cosmetics = {}
+local CosmeticsModule = require(game:GetService("ReplicatedStorage").Data.CosmeticRegistry.CosmeticList)
+local CrateModule = require(game:GetService("ReplicatedStorage").Data.CosmeticCrateShopData)
+
+for i,v in pairs(CosmeticsModule) do
+    table.insert(Cosmetics, i)
+end
+
+for i,v in pairs(CrateModule) do
+    table.insert(Cosmetics, i)
+end
+
+
+-- honey shop
+
+local HoneyShop = {}
+local HoneyShopModule = require(game:GetService("ReplicatedStorage").Data.HoneyEventShopData)
+
+for i,v in pairs(HoneyShopModule) do
+    table.insert(HoneyShop, i)
+end
+
 -- weathers / events
 
 local WeatherEvents = {}
 
 for i,v in pairs(plr.PlayerScripts.WeatherClient:GetChildren()) do
-    if v:IsA("LocalScript") then
-        table.insert(WeatherEvents, v.Name)
-    end
+    table.insert(WeatherEvents, v.Name)
 end
 
 -- suffix
@@ -206,8 +226,12 @@ local Tabs = {
         Title = "Home",
         Icon = "phosphor-users-bold"
     },
+    Event = Window:CreateTab{
+        Title = "Event",
+        Icon = "clock",
+    },
     Seeds = Window:CreateTab{
-        Title = "Seeds",
+        Title = "Garden",
         Icon = "flower"
     },
     Gear = Window:CreateTab{
@@ -359,17 +383,187 @@ end)
 
 -- shops
 
+Tabs.Shops:Section("Seeds")
+
+local SelectedSeeds = {}
+
+Tabs.Shops:CreateToggle("AutoBuySeedsToggleFlag", {Title = "Auto Buy", Default = false, Description = "automatically buys the selected seeds.", Callback = function(bool)
+    AutoBuySeeds = bool
+end})
+
+Tabs.Shops:CreateDropdown("ShopsSeedsSelectionFlag", {Title = "Select Seeds", Values = Seeds, Multi = true, Searchable = true, Description = "Select the Seeds that the Toggle above will target when Toggled.", Default = {}, Callback = function(str)
+    table.clear(SelectedSeeds)
+    for i,v in pairs(str) do
+        table.insert(SelectedSeeds, i)
+    end
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoBuySeeds then
+            for i,v in SelectedSeeds do
+                game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(v)
+            end
+            wait(0.1)
+        end
+    end
+end)
+
+Tabs.Shops:Section("Gear")
+
+local SelectedGears = {}
+
+Tabs.Shops:CreateToggle("AutoBuyGearToggleFlag", {Title = "Auto Buy", Default = false, Description = "automatically buys the selected gear.", Callback = function(bool)
+    AutoBuyGear = bool
+end})
+
+Tabs.Shops:CreateDropdown("ShopsGearSelectionFlag", {Title = "Select Gears", Values = Gear, Multi = true, Searchable = true, Description = "Select the Gear that the Toggle above will target when Toggled.", Default = {}, Callback = function(str)
+    table.clear(SelectedGears)
+    for i,v in pairs(str) do
+        table.insert(SelectedGears, i)
+    end
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoBuyGear then
+            for i,v in SelectedGears do
+                game:GetService("ReplicatedStorage").GameEvents.BuyGearStock:FireServer(v)
+            end
+            wait(0.1)
+        end
+    end
+end)
+
+Tabs.Shops:Section("Eggs")
+
+local SelectedEggs = {}
+local PurchasedEggs = {}
+
+Tabs.Shops:CreateToggle("AutoBuyEggToggleFlag", {Title = "Auto Buy", Default = false, Description = "automatically buys the selected eggs.", Callback = function(bool)
+    AutoBuyEggs = bool
+end})
+
+Tabs.Shops:CreateDropdown("ShopsEggsSelectionFlag", {Title = "Select Eggs", Values = Eggs, Multi = true, Searchable = true, Description = "Select the Eggs that the Toggle above will target when Toggled.", Default = {}, Callback = function(str)
+    table.clear(SelectedEggs)
+    for i,v in pairs(str) do
+        table.insert(SelectedEggs, i)
+    end
+end})
+
+-- this is such a bad method of detecting it but it works
+
+spawn(function()
+    while wait(0.1) do
+        if AutoBuyEggs then
+            for i,v in pairs(workspace.NPCS["Pet Stand"].EggLocations:GetChildren()) do
+                if table.find(SelectedEggs, v.Name) and not table.find(PurchasedEggs, v) then
+                    local val = 0
+                    if tostring(v.WorldPivot) == "-289.039246, 2.79752779, 11.7703476, 1, 0, 0, 0, 1, 0, 0, 0, 1" then
+                        val = 2
+                    elseif tostring(v.WorldPivot) == "-289.031219, 2.79752779, 7.74039459, 1, 0, 0, 0, 1, 0, 0, 0, 1" then
+                        val = 3
+                    elseif tostring(v.WorldPivot) == "-289.04126, 2.87552762, 3.73038578, 1, 0, 0, 0, 1, 0, 0, 0, 1" then
+                        val = 1
+                    end
+                    if val ~= 0 then
+                        game:GetService("ReplicatedStorage").GameEvents.BuyPetEgg:FireServer(val)
+                        table.insert(PurchasedEggs, v)
+                    end
+                    wait(1)
+                end
+            end
+            wait(2)
+        end
+    end
+end)
+
+Tabs.Shops:Section("Cosmetics")
+
+local SelectedCosmetics = {}
+
+Tabs.Shops:CreateToggle("AutoBuyCosmeticsToggleFlag", {Title = "Auto Buy", Default = false, Description = "automatically buys the selected cosmetics.", Callback = function(bool)
+    AutoBuyCosmetics = bool
+end})
+
+Tabs.Shops:CreateDropdown("ShopsCosmeticsSelectionFlag", {Title = "Select Cosmetics", Values = Cosmetics, Multi = true, Searchable = true, Description = "Select the Cosmetics that the Toggle above will target when Toggled.", Default = {}, Callback = function(str)
+    table.clear(SelectedCosmetics)
+    for i,v in pairs(str) do
+        table.insert(SelectedCosmetics, i)
+    end
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoBuyCosmetics then
+            for i,v in pairs(SelectedCosmetics) do
+                game:GetService("ReplicatedStorage").GameEvents.BuyCosmeticCrate:FireServer(v)
+                game:GetService("ReplicatedStorage").GameEvents.BuyCosmeticItem:FireServer(v)
+                wait(0.5)
+            end
+            wait(2.5)
+        end
+    end
+end)
+
+Tabs.Shops:Section("Honey Shop")
+
+local SelectedHoney = {}
+
+Tabs.Shops:CreateToggle("AutoBuyHoneyToggleFlag", {Title = "Auto Buy", Default = false, Description = "automatically buys the selected honey shop items.", Callback = function(bool)
+    AutoBuyHoney = bool
+end})
+
+Tabs.Shops:CreateDropdown("ShopsHoneySelectionFlag", {Title = "Select Honey Shop Items", Values = HoneyShop, Multi = true, Searchable = true, Description = "Select the Shop Items that the Toggle above will target when Toggled.", Default = {}, Callback = function(str)
+    table.clear(SelectedHoney)
+    for i,v in pairs(str) do
+        table.insert(SelectedHoney, i)
+    end
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoBuyHoney then
+            for i,v in pairs(SelectedHoney) do
+                game:GetService("ReplicatedStorage").GameEvents.BuyEventShopStock:FireServer(v)
+                wait(0.5)
+            end
+            wait(2.5)
+        end
+    end
+end)
+
 -- misc
 
 Tabs.Misc:Section("Weather")
 
--- create all attributes in workspace :D
+-- create all attributes in workspace
 
 for i,v in pairs(WeatherEvents) do
     if not workspace:GetAttribute(v) then
-        workspace:SetAttribute(v, false)
+        workspace:SetAttribute(v, false) -- default to false otherwise it will be playing
     end
 end
+
+Tabs.Misc:CreateToggle("WeatherEditorToggleFlag", {Title = "Spawn Weather", Default = false, Description = "Spawns the Weather Selected into the game some may not work.", Callback = function(bool)
+    SpawnWeather = bool
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if SpawnWeather then
+            workspace:SetAttribute(SelectedWeather, true)
+        end
+    end
+end)
+
+Tabs.Misc:CreateButton{Title = "Remove Weather", Description = "Removes the current Selected Weather.", Callback = function()
+    workspace:SetAttribute(SelectedWeather, false)
+end}
+
+Tabs.Misc:CreateDropdown("WeatherEditorSelectionFlag", {Title = "Select Weather", Values = WeatherEvents, Multi = false, Searchable = true, Description = "Select the Weather that the Toggle above will target when Toggled.", Default = "", Callback = function(str)
+    SelectedWeather = tostring(str) 
+end})
 
 Tabs.Misc:Section("Player")
 
@@ -480,6 +674,24 @@ Tabs.Performance:CreateToggle("3dRenderingToggleFlag", {Title = "3D Rendering", 
     game:GetService("RunService"):Set3dRenderingEnabled(not bool)
 end})
 
+Tabs.Performance:CreateToggle("TabOutFpsChangerFlag", {Title = "Change FPS when Window is not focused", Default = false, Description = "When the current Roblox window is not focused this will set your fps to what is entered", Callback = function(bool)
+    TabToggle = bool
+end})
+
+Tabs.Performance:CreateInput("FPSCapInput", { Title = "Window Fps Amount", Description = "The amount of fps wanted when tabbed out of the Roblox Window", Default = "30", Placeholder = "Enter Fps", Numeric = true, Finished = true, Callback = function(int)
+    wantedwindowfps = int
+end})
+
+game:GetService("UserInputService").WindowFocusReleased:Connect(function()
+    if not TabToggle then return end
+    setfpscap(tonumber(wantedwindowfps))
+end)
+
+game:GetService("UserInputService").WindowFocused:Connect(function()
+    if not TabToggle then return end
+    setfpscap(1000)
+end)
+
 Tabs.Performance:CreateInput("FPSCapInput", { Title = "Fps Cap", Description = "Changes the Roblox fps cap to whatever is inputted", Default = "1000", Placeholder = "Enter Fps", Numeric = true, Finished = true, Callback = function(int)
     setfpscap(tonumber(int))
 end})
@@ -497,7 +709,7 @@ SaveManager:BuildConfigSection(Tabs.Settings)
 Window:SelectTab(1)
 SaveManager:LoadAutoloadConfig()
 
--- useless since most executors support anti afk already
+-- useless since most executors automatically have anti afk already
 
 game:GetService("GuiService").ErrorMessageChanged:Connect(function()
     if game:GetService("GuiService"):GetErrorType() == Enum.ConnectionError.DisconnectErrors then
@@ -509,3 +721,33 @@ game.Players.LocalPlayer.Idled:Connect(function()
     game:GetService("VirtualUser"):CaptureController()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
+
+--[[
+getgenv().Toggled = false
+
+spawn(function()
+    while wait() do
+        if getgenv().Toggled then
+            if not string.find(game:GetService("Workspace").Interaction.UpdateItems.HoneyEvent.HoneyCombpressor.Sign.SurfaceGui.TextLabel.Text, "KG") then
+                print("[SCRIPT] Checking Honey Status")
+                if game:GetService("Workspace").Interaction.UpdateItems.HoneyEvent.HoneyCombpressor.Sign.SurfaceGui.TextLabel.Text == "READY" then
+                    game:GetService("ReplicatedStorage").GameEvents.HoneyMachineService_RE:FireServer("MachineInteract")
+                    print("[SCRIPT] Claiming Honey.")
+                    wait(1)
+                end
+            end
+
+            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                if v:FindFirstChild("Item_Seed") and string.find(v.Name:lower(), "pollinated") and v:IsA("Tool") then
+                    v.Parent = game.Players.LocalPlayer.Character
+                    print("[SCRIPT] Equipping and Giving:", v.Name)
+                    wait(0.5)
+                    game:GetService("ReplicatedStorage").GameEvents.HoneyMachineService_RE:FireServer("MachineInteract")
+                    wait(0.5)
+                    break
+                end
+            end
+        end
+    end
+end)
+]]
