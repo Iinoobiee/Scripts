@@ -1,3 +1,5 @@
+-- if you are reading this then you are likely a skid i give full permission to skid off this :)
+
 if not game:IsLoaded() then
     repeat
         task.wait()
