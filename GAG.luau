@@ -1,12 +1,16 @@
-if not game:IsLoaded() then
-    repeat
-        task.wait()
-    until game:IsLoaded()
-end
+repeat
+    wait()
+until game:IsLoaded()
 
 if game.PlaceId ~= 126884695634066 then
     warn("Player is in the wrong game!")
     return
+end
+
+for i,v in pairs(game.ReplicatedFirst:GetDescendants()) do
+    if v:IsA("LocalScript") then
+        v.Disabled = true
+    end
 end
 
 -- player stuff
@@ -15,6 +19,10 @@ local plr = game.Players.LocalPlayer
 local char = plr.Character
 local root = char:FindFirstChild("HumanoidRootPart")
 local hum = char:FindFirstChild("Humanoid")
+
+repeat
+    wait()
+until game.Players.LocalPlayer:FindFirstChild("leaderstats")
 
 local sheckles = tonumber(plr.leaderstats.Sheckles.Value) or 0
 local honey = tonumber(plr.PlayerGui.Honey_UI.Frame.TextLabel1.Text) or 0
@@ -127,7 +135,7 @@ local function Suffix(value)
     return tostring(value)
 end
 
--- gfx not mine i dont take credits but idk who owns it to credits to them :D
+-- gfx not mine i dont take credits but idk who owns it to credits to them
 
 local mod = {}
 
@@ -136,7 +144,7 @@ local env = getgenv()
 
 env.conns = env.conns or {}
 
-for i, v in pairs(env.conns) do
+for i,v in pairs(env.conns) do
 	pcall(v.Disconnect, v)
 end
 
@@ -171,7 +179,7 @@ local function cache(v)
 	}
 end
 
-for i, v in pairs(workspace:GetDescendants()) do
+for i,v in pairs(workspace:GetDescendants()) do
 	if v:IsA("BasePart") then
 		cache(v)
 	end
@@ -226,17 +234,9 @@ local Tabs = {
         Title = "Home",
         Icon = "phosphor-users-bold"
     },
-    Event = Window:CreateTab{
-        Title = "Event",
-        Icon = "clock",
-    },
-    Seeds = Window:CreateTab{
+    Garden = Window:CreateTab{
         Title = "Garden",
         Icon = "flower"
-    },
-    Gear = Window:CreateTab{
-        Title = "Gear",
-        Icon = "package",
     },
     Shops = Window:CreateTab{
         Title = "Shops",
@@ -250,10 +250,6 @@ local Tabs = {
         Title = "Performance",
         Icon = "gauge",
     },
-    Logging = Window:CreateTab{
-        Title = "Logging",
-        Icon = "database",
-    },
     Settings = Window:CreateTab{
         Title = "Settings",
         Icon = "settings"
@@ -261,15 +257,6 @@ local Tabs = {
 }
 
 -- home
-
-Tabs.Home:Section("Credits")
-
-local CreditsInfoLabel = Tabs.Home:CreateParagraph("CreditsInfoLabel", {
-    Title = "Credits",
-    Content = "btdcbuus_ (discord)",
-    TitleAlignment = "Middle",
-    ContentAlignment = Enum.TextXAlignment.Center
-})
 
 Tabs.Home:Section("Player")
 
@@ -289,12 +276,10 @@ local TimeElapsedLabel = Tabs.Home:CreateParagraph("TimeElapsedLabel", {
 
 PlayerInfoLabel:SetValue(plr.DisplayName.." - "..plr.UserId)
 
--- this looks stupid to look at please ignore
-
 local elapsed = 0
 
 spawn(function()
-    while true do
+    while wait() do
         elapsed = elapsed + 1
 
         local hours = math.floor(elapsed / 3600)
@@ -332,7 +317,7 @@ local HoneyTrackerLabel = Tabs.Home:CreateParagraph("HoneyTrackerLabel", {
 })
 
 spawn(function()
-    while wait(1) do
+    while wait(1.5) do
         sheckles = tonumber(plr.leaderstats.Sheckles.Value) or 0
         honey = tonumber(plr.PlayerGui.Honey_UI.Frame.TextLabel1.Text) or 0
         ShecklesTrackerLabel:SetValue(tostring(Suffix(sheckles)))
@@ -376,8 +361,340 @@ spawn(function()
         EggsTrackerLabel:SetValue(tostring(CurrentEggs))
         PlantsTrackerLabel:SetValue(tostring(CurrentPlants))
         PlayerInfoLabel:SetValue(plr.DisplayName.." - "..plr.UserId) -- ui bugs out and makes it a different color otherwise
-        CreditsInfoLabel:SetValue("btdcbuus_ (discord)") -- ui bugs out and makes it a different color otherwise
         wait(5)
+    end
+end)
+
+-- garden
+
+local Selling = false
+
+Tabs.Garden:Section("Honey")
+
+local AutoHoneyBlacklist = {}
+
+Tabs.Garden:CreateToggle("AutoHoneyToggleFlag", {Title = "Auto Honey", Default = false, Description = "automatically farms honey from the fruits that are in your inventory", Callback = function(bool)
+    AutoHoney = bool
+end})
+
+Tabs.Garden:CreateDropdown("AutoHoneyBlacklistFlag", {Title = "Select Blacklists", Values = Seeds, Multi = true, Searchable = true, Description = "Select the Types of Fruits that this will blacklist from trading as honey", Default = {}, Callback = function(str)
+    table.clear(AutoHoneyBlacklist)
+    for i,v in pairs(str) do
+        table.insert(AutoHoneyBlacklist, i)
+    end
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoHoney then
+            if not string.find(workspace.HoneyEvent.HoneyCombpressor.Sign.SurfaceGui.TextLabel.Text, "KG") then
+                game:GetService("ReplicatedStorage").GameEvents.HoneyMachineService_RE:FireServer("MachineInteract")
+                wait(1)
+            else
+                for i,v in pairs(plr.Backpack:GetChildren()) do
+                    if v:FindFirstChild("Item_Seed") and string.find(v.Name:lower(), "pollinated") and v:IsA("Tool") then
+                        for c,d in pairs(AutoHoneyBlacklist) do
+                            if not string.find(v.Name, d) then
+                                v.Parent = char
+                                wait(0.5)
+                                game:GetService("ReplicatedStorage").GameEvents.HoneyMachineService_RE:FireServer("MachineInteract")
+                                wait(0.5)
+                                break  
+                            end
+                        end
+                    end
+                end
+            end
+            wait(0.25)
+        end
+    end
+end)
+
+Tabs.Garden:Section("Planting")
+
+local AutoPlantRange = 10
+
+Tabs.Garden:CreateToggle("AutoPlantToggleFlag", {Title = "Auto Plant", Default = false, Description = "automatically plants seeds in your inventory on your garden in a random position", Callback = function(bool)
+    AutoPlant = bool
+end})
+
+Tabs.Garden:CreateSlider("AutoPlantSliderFlag", {
+    Title = "Plant Range",
+    Description = "Adjust the range for auto plant using this slider",
+    Default = 10,
+    Min = 5,
+    Max = 20,
+    Rounding = 0,
+    Callback = function(Value)
+        AutoPlantRange = Value
+    end
+})
+
+local function plant(seed)
+	local lands = {}
+
+	for i,v in pairs(farm.Important.Plant_Locations:GetChildren()) do
+		table.insert(lands, v)
+	end
+
+	if #lands > 0 then
+		local pick = lands[math.random(1, #lands)]
+		local pos = pick.Position + Vector3.new(math.random(-AutoPlantRange, AutoPlantRange), math.random(-AutoPlantRange, AutoPlantRange), math.random(-AutoPlantRange, AutoPlantRange))
+		game.ReplicatedStorage.GameEvents.Plant_RE:FireServer(pos, seed)
+	end
+end
+
+spawn(function()
+	while wait(0.1) do
+		if AutoPlant then
+			for i,v in pairs(plr.Backpack:GetChildren()) do
+				if string.match(v.Name, "Seed") then
+					char.Humanoid:EquipTool(v)
+					wait(0.1)
+					plant(string.split(v.Name, " ")[1])
+				end
+			end
+
+			for i,v in pairs(char:GetChildren()) do
+				if string.match(v.Name, "Seed") then
+					plant(string.split(v.Name, " ")[1])
+				end
+			end
+
+			wait(0.1)
+		end
+	end
+end)
+
+Tabs.Garden:Section("Collecting")
+
+local AutoCollectMethod = ""
+local AutoCollectBlacklist = {}
+
+local CollectionsMethods = {
+    "Teleport",
+    "Normal",
+}
+
+Tabs.Garden:CreateToggle("AutoCollectToggleFlag", {Title = "Auto Collect", Default = false, Description = "automatically collects your garden plants", Callback = function(bool)
+    AutoCollect = bool
+end})
+
+Tabs.Garden:CreateDropdown("AutoCollectSelectionFlag", {Title = "Select Collection Method", Values = CollectionsMethods, Multi = false, Searchable = true, Description = "Select the method for auto collect", Default = "", Callback = function(str)
+    AutoCollectMethod = str
+end})
+
+Tabs.Garden:CreateDropdown("AutoCollectBlacklistFlag", {Title = "Select Blacklists", Values = Seeds, Multi = true, Searchable = true, Description = "Whatever is selected here will be blacklisted from auto collect", Default = {}, Callback = function(str)
+    table.clear(AutoCollectBlacklist)
+    for i,v in pairs(str) do
+        table.insert(AutoCollectBlacklist, i)
+    end
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoCollect then
+            for i,v in pairs(farm.Important.Plants_Physical:GetDescendants()) do
+                if v:IsA("ProximityPrompt") and AutoCollect then
+                    print(v.Parent.Parent.Name)
+                    if not table.find(AutoCollectBlacklist, v.Parent.Parent.Name) then
+                        if AutoCollectMethod == "Teleport" and v.Parent:IsA("Part") then
+                            if Selling then
+                                repeat 
+                                    wait(0.2)
+                                until not Selling
+                                wait(1)
+                            end
+                            root.CFrame = v.Parent.CFrame
+                            wait(0.1)
+                        end
+                        fireproximityprompt(v)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+Tabs.Garden:Section("Selling")
+
+local AutoSellAmount = 10
+
+Tabs.Garden:CreateToggle("AutoSellToggleFlag", {Title = "Auto Sell", Default = false, Description = "automatically sells your inventory when you are at the target amount", Callback = function(bool)
+    AutoSell = bool
+end})
+
+Tabs.Garden:CreateSlider("AuroSellSliderFlag", {
+    Title = "Sell Amount",
+    Description = "Adjust the range for auto sell using this slider",
+    Default = 10,
+    Min = 5,
+    Max = 50,
+    Rounding = 0,
+    Callback = function(Value)
+        AutoSellAmount = Value
+    end
+})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoSell then
+            local count = 0
+
+            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                for c,d in pairs(Seeds) do
+                    if string.find(v.Name, d) and not string.find(v.Name, "Seed") then
+                        count += 1
+                    end
+                end
+            end
+
+            if count >= AutoSellAmount then
+                Selling = true
+                local old = root.CFrame
+                root.CFrame = workspace.Tutorial_Points.Tutorial_Point_2.CFrame
+                wait(0.5)
+                game:GetService("ReplicatedStorage").GameEvents.Sell_Inventory:FireServer()
+                wait(0.5)
+                root.CFrame = old
+                Selling = false
+            end
+            wait(1.5)
+        end
+    end
+end)
+
+Tabs.Garden:Section("Watering")
+
+local SelectedPlant = ""
+local WantedPercentage = 100
+
+Tabs.Garden:CreateToggle("AutoWaterToggleFlag", {Title = "Auto Water", Default = false, Description = "automatically waters plants selected in your garden", Callback = function(bool)
+    AutoWater = bool
+end})
+
+Tabs.Garden:CreateDropdown("AutoWaterSelectionFlag", {Title = "Select Plant Type", Values = Seeds, Multi = false, Searchable = true, Description = "Select the Seed Type to Automatically Water", Default = "", Callback = function(str)
+    SelectedPlant = tostring(str)
+end})
+
+Tabs.Garden:CreateSlider("AutoWaterPercentageFlag", {
+    Title = "Percentage Amount",
+    Description = "The percentage amount that it will stop watering at",
+    Default = 100,
+    Min = 1,
+    Max = 100,
+    Rounding = 0,
+    Callback = function(Value)
+        WantedPercentage = Value
+    end
+})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoWater then
+            for i,v in pairs(farm.Important.Plants_Physical:GetChildren()) do
+                if v.Name == SelectedPlant then
+                    if v.Grow.Age.Value < v:GetAttribute("MaxAge") and (v.Grow.Age.Value / v:GetAttribute("MaxAge")) * 100 < WantedPercentage then
+                        for c,d in pairs(plr.Backpack:GetChildren()) do
+                            if string.find(d.Name, "Watering") then
+                                d.Parent = game.Players.LocalPlayer.Character
+                                break
+                            end
+                        end
+                        game:GetService("ReplicatedStorage").GameEvents.Water_RE:FireServer(v:FindFirstChildWhichIsA("Part").Position)
+                        wait(1)
+                        break
+                    end
+                end
+            end
+            wait(1.5)
+        end
+    end
+end)
+
+Tabs.Garden:Section("Hatching")
+
+Tabs.Garden:CreateToggle("AutoHatchToggleFlag", {Title = "Auto Hatch", Default = false, Description = "automatically hatches eggs in your garden", Callback = function(bool)
+    AutoHatch = bool
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoHatch then
+            for i,v in pairs(farm.Important.Objects_Physical:GetChildren()) do
+                if v.Name == "PetEgg" then
+                    game:GetService("ReplicatedStorage").GameEvents.PetEggService:FireServer("HatchPet", v)
+                    wait(0.5)
+                end
+            end
+            wait(2)
+        end
+    end
+end)
+
+Tabs.Garden:CreateToggle("AutoPlaceEggsToggleFlag", {Title = "Auto Place Eggs", Default = false, Description = "automatically places eggs in your garden when they are not 3/3", Callback = function(bool)
+    AutoPlaceEggs = bool
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoPlaceEggs then
+            local CurrentEggs = 0
+
+            for i,v in pairs(farm.Important.Objects_Physical:GetChildren()) do
+                if v.Name == "PetEgg" and v:IsA("Model") then
+                    CurrentEggs += 1
+                end
+            end
+
+            if CurrentEggs < 3 then
+                for i,v in pairs(plr.Backpack:GetChildren()) do
+                    if string.find(v.Name:lower(), "egg") then
+                        v.Parent = char
+                        wait(0.5)
+                        local lands = {}
+
+                        for i,v in pairs(farm.Important.Plant_Locations:GetChildren()) do
+                            table.insert(lands, v)
+                        end
+
+                        if #lands > 0 then
+                            local pick = lands[math.random(1, #lands)]
+                            local pos = pick.Position + Vector3.new(math.random(-AutoPlantRange, AutoPlantRange), math.random(-AutoPlantRange, AutoPlantRange), math.random(-AutoPlantRange, AutoPlantRange))
+                            game:GetService("ReplicatedStorage").GameEvents.PetEggService:FireServer("CreateEgg", pos)
+                        end
+                        break
+                    end
+                end
+            end
+        end
+    end
+end)
+
+Tabs.Garden:CreateToggle("AutoPlacePetToggleFlag", {Title = "Auto Place Pets", Default = false, Description = "automatically places pets in your garden when they are not 3/3", Callback = function(bool)
+    AutoPlacePets = bool
+end})
+
+spawn(function()
+    while wait(0.1) do
+        if AutoPlacePets then
+            local PetCount = 0
+            for i,v in pairs(plr.PlayerGui.ActivePetUI.Frame.Main.ScrollingFrame:GetChildren()) do
+                if string.find(v.Name, "{") then
+                    PetCount += 1
+                end
+            end
+            if PetCount < 3 then
+                for i,v in pairs(plr.Backpack:GetChildren()) do
+                    if string.find(v.Name, "Age") then
+                        v.Parent = game.Players.LocalPlayer.Character
+                        game:GetService("ReplicatedStorage").GameEvents.PetsService:FireServer("EquipPet", tostring(v:GetAttribute("PET_UUID")), CFrame.new(-92.942894, 0, 81.6487808, 1, 0, 0, 0, 1, 0, 0, 0, 1))
+                        break
+                    end
+                end
+            end
+            wait(1)
+        end
     end
 end)
 
@@ -721,33 +1038,3 @@ game.Players.LocalPlayer.Idled:Connect(function()
     game:GetService("VirtualUser"):CaptureController()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
-
---[[
-getgenv().Toggled = false
-
-spawn(function()
-    while wait() do
-        if getgenv().Toggled then
-            if not string.find(game:GetService("Workspace").Interaction.UpdateItems.HoneyEvent.HoneyCombpressor.Sign.SurfaceGui.TextLabel.Text, "KG") then
-                print("[SCRIPT] Checking Honey Status")
-                if game:GetService("Workspace").Interaction.UpdateItems.HoneyEvent.HoneyCombpressor.Sign.SurfaceGui.TextLabel.Text == "READY" then
-                    game:GetService("ReplicatedStorage").GameEvents.HoneyMachineService_RE:FireServer("MachineInteract")
-                    print("[SCRIPT] Claiming Honey.")
-                    wait(1)
-                end
-            end
-
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                if v:FindFirstChild("Item_Seed") and string.find(v.Name:lower(), "pollinated") and v:IsA("Tool") then
-                    v.Parent = game.Players.LocalPlayer.Character
-                    print("[SCRIPT] Equipping and Giving:", v.Name)
-                    wait(0.5)
-                    game:GetService("ReplicatedStorage").GameEvents.HoneyMachineService_RE:FireServer("MachineInteract")
-                    wait(0.5)
-                    break
-                end
-            end
-        end
-    end
-end)
-]]
