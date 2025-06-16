@@ -3,7 +3,7 @@ local Supported = {
 }
 
 if not Supported[tostring(game.PlaceId)] then
-    return
+    return warn("Place Id not Supported")
 end
 
 loadstring(game:HttpGet(Supported[tostring(game.PlaceId)]))()
