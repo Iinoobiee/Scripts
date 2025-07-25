@@ -56,6 +56,7 @@ end
 
 local CompetitiveToggle = false -- main toggle
 local CompetitiveGui = false -- gui toggle
+local CompetitiveEggPriority = false -- prioritizes eggs
 local CompetitivePinging = false -- ping user on webhook
 local CompetitiveUrl = "" -- webhook url
 local CompetitiveUserId = ""
@@ -238,17 +239,19 @@ spawn(function()
                 return
             end
 
-            table.sort(Tasks, function(Task1, Task2)
-                local A = table.any(Eggs, function(Egg)
-                    return string.find(Task1, Egg)
-                end)
+            if CompetitiveEggPriority then
+                table.sort(Tasks, function(Task1, Task2)
+                    local A = table.any(Eggs, function(Egg)
+                        return string.find(Task1, Egg)
+                    end)
 
-                local B = table.any(Eggs, function(Egg)
-                    return string.find(Task2, Egg)
-                end)
+                    local B = table.any(Eggs, function(Egg)
+                        return string.find(Task2, Egg)
+                    end)
 
-                return A and not B
-            end)
+                    return A and not B
+                end)
+            end
 
             local EggTask = true
 
@@ -387,6 +390,10 @@ Tabs.Competitive:CreateToggle("CompetitiveToggle", {Title = "Enable", Default = 
 end})
 
 Tabs.Competitive:Section("Settings")
+
+Tabs.Competitive:CreateToggle("CompetitiveEggPriority", {Title = "Competitive Egg Priority", Default = false, Description = "Enables competitive priority which makes eggs the highest priority over other tasks", Callback = function(bool)
+    CompetitiveEggPriority = bool
+end})
 
 Tabs.Competitive:CreateToggle("CompetitiveGui", {Title = "Competitive Gui", Default = false, Description = "Enables competitive gui", Callback = function(bool)
     CompetitiveGui = bool
