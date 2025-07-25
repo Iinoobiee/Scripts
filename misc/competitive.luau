@@ -8,6 +8,7 @@ end
 
 if game:GetService("Players").LocalPlayer.PlayerGui.ScreenGui.HUD.Left.Currency.Coins.Frame.Label.Text == "$1,000,000" then
     wait(2)
+end
 
 -- anti afk
 
@@ -47,6 +48,12 @@ local HttpService = game:GetService("HttpService")
 
 -- env
 
+local Eggs = {}
+
+for i,v in pairs(require(game:GetService("ReplicatedStorage").Shared.Data.Eggs)) do
+    table.insert(Eggs, i)
+end
+
 local CompetitiveToggle = false -- main toggle
 local CompetitiveGui = false -- gui toggle
 local CompetitivePinging = false -- ping user on webhook
@@ -55,13 +62,17 @@ local CompetitiveUserId = ""
 local CompetitiveStorage = {} -- storage of tasks
 local CompetitiveBlacklists = {}  -- blacklisted tasks
 local CompetitiveTasks = {
-    
+    "Hatch 1,250 Eggs",
+    "Hatch 80 Shiny pets",
+    "Hatch 1 Mythic Pet",
+    "Hatch 2 Mythic Pets",
+    "Play for 15 Minutes",
 }
 
-local Eggs = {}
-
-for i,v in pairs(require(game:GetService("ReplicatedStorage").Shared.Data.Eggs)) do
-    table.insert(Eggs, i)
+for i,v in pairs(Eggs) do
+    table.insert(CompetitiveTasks, "Hatch 250 " .. v .. "s")
+    table.insert(CompetitiveTasks, "Hatch 450 " .. v .. "s")
+    table.insert(CompetitiveTasks, "Hatch 650 " .. v .. "s")
 end
 
 -- tween
