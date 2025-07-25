@@ -58,6 +58,7 @@ local CompetitiveToggle = false -- main toggle
 local CompetitiveGui = false -- gui toggle
 local CompetitiveEggPriority = false -- prioritizes eggs
 local CompetitivePinging = false -- ping user on webhook
+local CompetitiveFallback = "" -- fallback egg
 local CompetitiveUrl = "" -- webhook url
 local CompetitiveUserId = ""
 local CompetitiveStorage = {} -- storage of tasks
@@ -253,11 +254,13 @@ spawn(function()
                 end)
             end
 
-            local EggTask = true
+            local EggTask = false
 
             for i,v in pairs(Tasks) do
                 for _, Egg in (Eggs) do
                     if string.find(v:lower(), Egg:lower()) then
+                        EggTask = true
+
                         if not game.Workspace.Rendered.Generic:FindFirstChild(Egg) then
                             Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
                             wait(1)
@@ -265,7 +268,8 @@ spawn(function()
                             wait(1)
 
                             if not game.Workspace.Rendered.Generic:FindFirstChild(Egg) then
-                                EggTask = false
+                                warn("[DEBUG] FAILED TO FIND EGG: " .. Egg)
+                                return
                             end
 
                             break
@@ -284,7 +288,7 @@ spawn(function()
             end
 
             if (EggTask == false) then
-                if not game.Workspace.Rendered.Generic:FindFirstChild("Infinity Egg") then
+                if not game.Workspace.Rendered.Generic:FindFirstChild(CompetitiveFallback) then
                     Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
                     wait(1)
                     Tween(CFrame.new(-97.7658462524414, 8.82483196258545, -27.341026306152344))
@@ -292,11 +296,11 @@ spawn(function()
                     return
                 end
 
-                if (HumanoidRootPart.Position - game.Workspace.Rendered.Generic:FindFirstChild("Infinity Egg").Hitbox.Position).Magnitude >= 10 then
-                    Tween(game.Workspace.Rendered.Generic:FindFirstChild("Infinity Egg").Hitbox.CFrame)
+                if (HumanoidRootPart.Position - game.Workspace.Rendered.Generic:FindFirstChild(CompetitiveFallback).Hitbox.Position).Magnitude >= 10 then
+                    Tween(game.Workspace.Rendered.Generic:FindFirstChild(CompetitiveFallback).Hitbox.CFrame)
                 end
 
-                Remote:FireServer("HatchEgg", "Infinity Egg")
+                Remote:FireServer("HatchEgg", CompetitiveFallback)
             end
 
             local CompletedTask
@@ -390,6 +394,10 @@ Tabs.Competitive:CreateToggle("CompetitiveToggle", {Title = "Enable", Default = 
 end})
 
 Tabs.Competitive:Section("Settings")
+
+Tabs.Competitive:CreateDropdown("CompetitiveFallback", {Title = "Competitive Fallback", Values = CompetitiveTasks, Multi = true, Searchable = true, Description = "The egg it will go to when it has no egg task", Default = "", Callback = function(str)
+    CompetitiveFallback = str
+end})
 
 Tabs.Competitive:CreateToggle("CompetitiveEggPriority", {Title = "Competitive Egg Priority", Default = false, Description = "Enables competitive priority which makes eggs the highest priority over other tasks", Callback = function(bool)
     CompetitiveEggPriority = bool
