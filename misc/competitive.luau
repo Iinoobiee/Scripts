@@ -56,6 +56,7 @@ end
 
 local CompetitiveToggle = false -- main toggle
 local CompetitiveGui = false -- gui toggle
+local CompetitiveRifts = false -- does rifts if one is there for the egg
 local CompetitiveEggPriority = false -- prioritizes eggs
 local CompetitivePinging = false -- ping user on webhook
 local CompetitiveFallback = "" -- fallback egg
@@ -255,39 +256,67 @@ spawn(function()
             end
 
             local EggTask = false
+            local RiftExists = false
 
             for i,v in pairs(Tasks) do
                 for _, Egg in (Eggs) do
                     if string.find(v:lower(), Egg:lower()) then
                         EggTask = true
 
-                        if not game.Workspace.Rendered.Generic:FindFirstChild(Egg) then
-                            Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
-                            wait(1)
-                            Tween(CFrame.new(-97.7658462524414, 8.82483196258545, -27.341026306152344))
-                            wait(1)
+                        if CompetitiveRifts then
+                            local RiftInstance = nil
+                            local RiftLuck = 0
 
-                            if not game.Workspace.Rendered.Generic:FindFirstChild(Egg) then
-                                warn("[DEBUG] FAILED TO FIND EGG: " .. Egg)
-                                return
+                            for i,v in pairs(game.Workspace.Rendered.Rifts:GetChildren()) do
+                                if string.find(v.Name:lower(), string.match(Egg, "([^%s]+)"):lower()) and v:FindFirstChild("Display") then
+                                    RiftExists = true
+                                    
+                                    local Luck = v.Display.SurfaceGui.Icon.Luck.Text:gsub("x", "")
+                                    if RiftLuck < tonumber(Luck) then
+                                        RiftInstance = v
+                                        RiftLuck = tonumber(Luck)
+                                    end
+                                end
                             end
 
+                            if not RiftInstance == nil then
+                                if (HumanoidRootPart.Position - RiftInstance.Display.Position).Magnitude >= 10 then
+                                    Tween(v.Display.CFrame)
+                                end
+
+                                Remote:FireServer("HatchEgg", Egg)
+                            end
+                        end
+
+                        if RiftExists == false then
+                            if not game.Workspace.Rendered.Generic:FindFirstChild(Egg) then
+                                Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
+                                wait(1)
+                                Tween(CFrame.new(-97.7658462524414, 8.82483196258545, -27.341026306152344))
+                                wait(1)
+
+                                if not game.Workspace.Rendered.Generic:FindFirstChild(Egg) then
+                                    warn("[DEBUG] FAILED TO FIND EGG: " .. Egg)
+                                    return
+                                end
+
+                                break
+                            end
+
+                            if (HumanoidRootPart.Position - game.Workspace.Rendered.Generic:FindFirstChild(Egg).Hitbox.Position).Magnitude >= 10 then
+                                Tween(game.Workspace.Rendered.Generic:FindFirstChild(Egg).Hitbox.CFrame)
+                            end
+
+                            Remote:FireServer("HatchEgg", Egg)
                             break
                         end
-
-                        if (HumanoidRootPart.Position - game.Workspace.Rendered.Generic:FindFirstChild(Egg).Hitbox.Position).Magnitude >= 10 then
-                            Tween(game.Workspace.Rendered.Generic:FindFirstChild(Egg).Hitbox.CFrame)
-                        end
-
-                        Remote:FireServer("HatchEgg", Egg)
-                        break
                     end
                 end
 
                 break
             end
 
-            if (EggTask == false) then
+            if EggTask == false then
                 if not game.Workspace.Rendered.Generic:FindFirstChild(CompetitiveFallback) then
                     Remote:FireServer("Teleport", "Workspace.Worlds.The Overworld.PortalSpawn")
                     wait(1)
@@ -397,6 +426,10 @@ Tabs.Competitive:Section("Settings")
 
 Tabs.Competitive:CreateDropdown("CompetitiveFallback", {Title = "Competitive Fallback", Values = CompetitiveTasks, Multi = true, Searchable = true, Description = "The egg it will go to when it has no egg task", Default = "", Callback = function(str)
     CompetitiveFallback = str
+end})
+
+Tabs.Competitive:CreateToggle("CompetitiveRifts", {Title = "Competitive Rifts", Default = false, Description = "Enables competitive rifts which makes it go to rifts when it finds a rift for the current egg it is hatching", Callback = function(bool)
+    CompetitiveRifts = bool
 end})
 
 Tabs.Competitive:CreateToggle("CompetitiveEggPriority", {Title = "Competitive Egg Priority", Default = false, Description = "Enables competitive priority which makes eggs the highest priority over other tasks", Callback = function(bool)
