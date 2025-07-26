@@ -356,7 +356,7 @@ spawn(function()
 
                 local Embed = {
                     title = "Task Completed!",
-                    description = "Old Task: " .. CompletedTask .. "\nNew Task: " .. NewTask .. "\nNew Points: " .. CompetitivePointsLabel.Text .. "\nNew Team Points: " .. CompetitiveTeamPointersLabel.Text .. "\nNew Leaderboard Spot: " .. CompetitiveLeaderboardLabel.Text
+                    description = "Old Task: " .. CompletedTask .. "\nNew Task: " .. NewTask .. "\nNew Points: " .. CompetitivePointsLabel.Text .. "\nNew Team Points: " .. CompetitiveTeamPointersLabel.Text .. "\nNew Leaderboard Spot: " .. CompetitiveLeaderboardLabel.Text,
                     color = 0x00C8FF,
                     footer = { text = os.date("%B %d, %Y  •  %I:%M %p") },
                 }
