@@ -424,7 +424,7 @@ end})
 
 Tabs.Competitive:Section("Settings")
 
-Tabs.Competitive:CreateDropdown("CompetitiveFallback", {Title = "Competitive Fallback", Values = CompetitiveTasks, Multi = true, Searchable = true, Description = "The egg it will go to when it has no egg task", Default = "", Callback = function(str)
+Tabs.Competitive:CreateDropdown("CompetitiveFallback", {Title = "Competitive Fallback", Values = Eggs, Multi = true, Searchable = true, Description = "The egg it will go to when it has no egg task", Default = "", Callback = function(str)
     CompetitiveFallback = str
 end})
 
