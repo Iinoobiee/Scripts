@@ -52,12 +52,25 @@ local RemoteFunction = game:GetService("ReplicatedStorage").Shared.Framework.Net
 local BoardItems = {}
 
 for i,v in pairs(BoardUtil.ChanceTile) do
-    print("Name: " .. i);
-    print("DisplayName: " .. v.DisplayName);
-    print("Color: " .. v.Color)
-    print("\n")
+    table.insert(BoardItems, v.DisplayName)
 end
 
+-- script
+
+local function GetPet()
+    local Pet
+
+    for i,v in pairs(game.Workspace.Rendered.Pets:GetDescendants()) do
+        if v:IsA("Label") and v.Text == Player.Name then
+            Pet = v.Parent.Parent.Parent
+            break
+        end
+    end
+
+    return Pet
+end
+
+print(GetPet().Name)
 
 --[[
 spawn(function()
