@@ -235,8 +235,8 @@ spawn(function()
                 end
             end
 
-            if game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
-                game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
+            if Player.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
+                Player.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
             end
 
             if not AutoMinigames then
@@ -259,8 +259,8 @@ spawn(function()
                 end
             end
 
-            if game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
-                game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
+            if Player.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
+                Player.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
             end
 
             if not AutoMinigames then
@@ -304,8 +304,8 @@ spawn(function()
                 end
             end
 
-            if game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
-                game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
+            if Player.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
+                Player.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
             end
 
             if not AutoMinigames then
@@ -331,8 +331,8 @@ spawn(function()
                 end
             end
 
-            if game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
-                game.Players.LocalPlayer.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
+            if Player.PlayerGui.ScreenGui:FindFirstChild("Prompt") then
+                Player.PlayerGui.ScreenGui:FindFirstChild("Prompt"):Destroy()
             end
         end
     end
