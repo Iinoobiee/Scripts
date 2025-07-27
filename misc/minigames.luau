@@ -39,8 +39,8 @@ until Player.PlayerGui.ScreenGui.HUD.Left.Currency.Coins.Frame.Label.Text ~= "$1
 
 local AutoDice = false
 local AutoDiceInterval = 6
-local AutoDicePrefered = ""
-local AutoDiceWanted = {}
+local AutoDicePrefered = "Dice"
+local AutoDiceWanted = {"Infinity Elixir", "Special Egg"}
 
 -- game
 
@@ -61,7 +61,7 @@ local function GetPetCFrame()
     local PetCFrame
 
     for i,v in pairs(game.Workspace.Rendered.Pets:GetDescendants()) do
-        if v:IsA("Label") and v.Text == Player.Name then
+        if v:IsA("TextLabel") and v.Text == Player.Name then
             PetCFrame = v.Parent.Parent.CFrame
             break
         end
@@ -98,38 +98,29 @@ local function ConvertTileType(Tile)
     return ConvertedName
 end
 
-local FutureNodes = BoardUtil:ResolveNodes(GetPetIndex(), AutoDiceInterval)
-local IsInRange = false
-local Index
-
-for i,v in pairs(FutureNodes) do
-    if table.find(AutoDiceWanted, ConvertTileType(v.Type)) and i <= 2 then
-        IsInRange = true
-        print(i)
-        break
-    end
-end
-
---[[
 spawn(function()
     while wait() do
         if AutoDice then
-            local FutureNodes = BoardUtil:ResolveNodes(GetPetIndex(), AutoDiceInterval)
+            local Index = GetPetIndex()
+            local FutureNodes = BoardUtil:ResolveNodes(Index, AutoDiceInterval)
             local IsInRange = false
-            local Index
 
             for i,v in pairs(FutureNodes) do
-                if table.find(AutoDiceWanted, ConvertTileType(v.Type)) and i <= 2 then
+                if table.find(AutoDiceWanted, ConvertTileType(v.Type)) and i then
                     IsInRange = true
-                    print(i)
+                    Index += i
                     break
                 end
             end
 
             if IsInRange then
-                RemoteFunction:InvokeServer("RollDice", "Golden Dice")
+                Index += RemoteFunction:InvokeServer("RollDice", "Golden Dice").Roll
             else
-                RemoteFunction:InvokeServer("RollDice", AutoDicePrefered)
+                Index += RemoteFunction:InvokeServer("RollDice", AutoDicePrefered).Roll
+            end
+
+            if Index > 88 then
+                Index -= 88
             end
 
             Board.Pieces[Player.Name].move(Index)
@@ -138,4 +129,3 @@ spawn(function()
         end
     end
 end)
-]]
