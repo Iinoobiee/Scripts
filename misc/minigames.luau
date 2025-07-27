@@ -39,7 +39,7 @@ until Player.PlayerGui.ScreenGui.HUD.Left.Currency.Coins.Frame.Label.Text ~= "$1
 
 local AutoDice = false
 local AutoDiceInterval = 6
-local AutoDicePrefered = "Giant Dice"
+local AutoDicePreference = "Giant Dice"
 local AutoDiceWanted = {"Infinity Elixir"}
 
 -- game
@@ -135,10 +135,10 @@ spawn(function()
             if IsInRange then
                 Called = RemoteFunction:InvokeServer("RollDice", "Golden Dice")
             else
-                Called = RemoteFunction:InvokeServer("RollDice", AutoDicePrefered)
+                Called = RemoteFunction:InvokeServer("RollDice", tostring(AutoDicePreference))
             end
 
-            wait(0.5)
+            wait(1)
             Index += Called.Roll
 
             if Index > 88 then
@@ -146,7 +146,7 @@ spawn(function()
             end
 
             Board.Pieces[Player.Name].move(Index)
-            RemoteEvent:FireServer("ClaimTile")
+            Remote:FireServer("ClaimTile")
             wait(0.5)
         end
     end
