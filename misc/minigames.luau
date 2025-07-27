@@ -37,7 +37,7 @@ until Player.PlayerGui.ScreenGui.HUD.Left.Currency.Coins.Frame.Label.Text ~= "$1
 
 -- env
 
-local AutoDice = false
+local AutoDice = true
 local AutoDiceInterval = 6
 local AutoDicePreference = "Giant Dice"
 local AutoDiceWanted = {"Infinity Elixir"}
@@ -125,6 +125,7 @@ spawn(function()
             for i,v in pairs(FutureNodes) do
                 if table.find(AutoDiceWanted, ConvertTileType(v.Type)) and i then
                     IsInRange = true
+                    print("found infinity elixir")
                     getgenv().IndexCache += i
                     break
                 end
@@ -134,6 +135,7 @@ spawn(function()
 
             if IsInRange then
                 Called = RemoteFunction:InvokeServer("RollDice", "Golden Dice")
+                print("rolling a 1")
             else
                 Called = RemoteFunction:InvokeServer("RollDice", tostring(AutoDicePreference))
             end
@@ -145,7 +147,14 @@ spawn(function()
             end
 
             Remote:FireServer("ClaimTile")
-            wait(0.5)
+            
+            if Called.Roll <= 3 then
+                wait(2.5)
+            elseif Called.Roll > 3 and Called.Roll < 9 then
+                wait(5)
+            else
+                wait(7.5)
+            end
         end
     end
 end)
