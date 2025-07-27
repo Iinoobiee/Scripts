@@ -119,42 +119,43 @@ end
 spawn(function()
     while wait() do
         if AutoDice then
-            local FutureNodes = BoardUtil:ResolveNodes(getgenv().IndexCache, AutoDiceInterval)
-            local IsInRange = false
+            pcall(function()
+                local FutureNodes = BoardUtil:ResolveNodes(getgenv().IndexCache, AutoDiceInterval)
+                local IsInRange = false
 
-            for i,v in pairs(FutureNodes) do
-                if table.find(AutoDiceWanted, ConvertTileType(v.Type)) and i then
-                    IsInRange = true
-                    print("found infinity elixir")
-                    getgenv().IndexCache += i
-                    break
+                for i,v in pairs(FutureNodes) do
+                    if table.find(AutoDiceWanted, ConvertTileType(v.Type)) then
+                        IsInRange = true
+                        print("found infinity elixir")
+                        break
+                    end
                 end
-            end
 
-            local Called
+                local Called
 
-            if IsInRange then
-                Called = RemoteFunction:InvokeServer("RollDice", "Golden Dice")
-                print("rolling a 1")
-            else
-                Called = RemoteFunction:InvokeServer("RollDice", tostring(AutoDicePreference))
-            end
+                if IsInRange then
+                    Called = RemoteFunction:InvokeServer("RollDice", "Golden Dice")
+                    print("rolling a 1")
+                else
+                    Called = RemoteFunction:InvokeServer("RollDice", tostring(AutoDicePreference))
+                end
 
-            getgenv().IndexCache += Called.Roll
+                getgenv().IndexCache += Called.Roll
 
-            if getgenv().IndexCache > 88 then
-                getgenv().IndexCache -= 88
-            end
+                if getgenv().IndexCache > 88 then
+                    getgenv().IndexCache -= 88
+                end
 
-            Remote:FireServer("ClaimTile")
-            
-            if Called.Roll <= 3 then
-                wait(2.5)
-            elseif Called.Roll > 3 and Called.Roll < 9 then
-                wait(5)
-            else
-                wait(7.5)
-            end
+                Remote:FireServer("ClaimTile")
+                
+                if Called.Roll <= 3 then
+                    wait(3.5)
+                elseif Called.Roll > 3 and Called.Roll < 9 then
+                    wait(6.5)
+                else
+                    wait(8.5)
+                end
+            end)
         end
     end
 end)
