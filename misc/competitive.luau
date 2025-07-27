@@ -66,14 +66,16 @@ local CompetitiveStorage = {} -- storage of tasks
 local CompetitiveBlacklists = {}  -- blacklisted tasks
 local CompetitiveTasks = {
     "Hatch 1,250 Eggs",
-    "Hatch 80 Shiny pets",
+    "Hatch 80 Shiny Pets",
+    "Hatch 50 Shiny Pets",
     "Hatch 1 Mythic Pet",
     "Hatch 2 Mythic Pets",
     "Play for 15 Minutes",
 }
 
 for i,v in pairs(Eggs) do
-    table.insert(CompetitiveTasks, "Hatch 250 " .. v .. "s")
+    table.insert(CompetitiveTasks, "Hatch 200 " .. v .. "s")
+    table.insert(CompetitiveTasks, "Hatch 350 " .. v .. "s")
     table.insert(CompetitiveTasks, "Hatch 450 " .. v .. "s")
     table.insert(CompetitiveTasks, "Hatch 650 " .. v .. "s")
 end
@@ -416,7 +418,7 @@ local Tabs = {
 }
 
 
-Tabs.Competitive:Section("Main Toggle")
+Tabs.Competitive:Section("Auto Competitive")
 
 Tabs.Competitive:CreateToggle("CompetitiveToggle", {Title = "Enable", Default = false, Description = "Enables competitive farm with whatever configuration is provided", Callback = function(bool)
     CompetitiveToggle = bool
