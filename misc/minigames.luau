@@ -44,7 +44,6 @@ local AutoDiceWanted = {"Infinity Elixir"}
 
 -- game
 
-local Board = require(game:GetService("ReplicatedStorage").Client.Gui.Frames.Board)
 local BoardUtil = require(game:GetService("ReplicatedStorage").Shared.Utils.BoardUtil)
 local Remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote:FindFirstChildWhichIsA("RemoteEvent")
 local RemoteFunction = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote:FindFirstChildWhichIsA("RemoteFunction")
@@ -102,6 +101,8 @@ local function GetPetIndex()
     return Index
 end
 
+getgenv().IndexCache = getgenv().IndexCache or GetPetIndex()
+
 local function ConvertTileType(Tile)
     local ConvertedName = "unknown"
 
@@ -118,14 +119,13 @@ end
 spawn(function()
     while wait() do
         if AutoDice then
-            local Index = GetPetIndex()
-            local FutureNodes = BoardUtil:ResolveNodes(Index, AutoDiceInterval)
+            local FutureNodes = BoardUtil:ResolveNodes(getgenv().IndexCache, AutoDiceInterval)
             local IsInRange = false
 
             for i,v in pairs(FutureNodes) do
                 if table.find(AutoDiceWanted, ConvertTileType(v.Type)) and i then
                     IsInRange = true
-                    Index += i
+                    getgenv().IndexCache += i
                     break
                 end
             end
@@ -138,14 +138,12 @@ spawn(function()
                 Called = RemoteFunction:InvokeServer("RollDice", tostring(AutoDicePreference))
             end
 
-            wait(1)
-            Index += Called.Roll
+            getgenv().IndexCache += Called.Roll
 
-            if Index > 88 then
-                Index -= 88
+            if getgenv().IndexCache > 88 then
+                getgenv().IndexCache -= 88
             end
 
-            Board.Pieces[Player.Name].move(Index)
             Remote:FireServer("ClaimTile")
             wait(0.5)
         end
