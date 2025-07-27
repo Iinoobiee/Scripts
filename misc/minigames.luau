@@ -39,8 +39,8 @@ until Player.PlayerGui.ScreenGui.HUD.Left.Currency.Coins.Frame.Label.Text ~= "$1
 
 local AutoDice = false
 local AutoDiceInterval = 6
-local AutoDicePrefered = "Dice"
-local AutoDiceWanted = {"Infinity Elixir", "Special Egg"}
+local AutoDicePrefered = "Giant Dice"
+local AutoDiceWanted = {"Infinity Elixir"}
 
 -- game
 
@@ -49,11 +49,28 @@ local BoardUtil = require(game:GetService("ReplicatedStorage").Shared.Utils.Boar
 local Remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote:FindFirstChildWhichIsA("RemoteEvent")
 local RemoteFunction = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote:FindFirstChildWhichIsA("RemoteFunction")
 
-local BoardItems = {}
+local BoardItems = {
+    "golden-dice",
+    "special-egg",
+    "basic-dice",
+    "infinity",
+    "golden-dice",
+    "super-ticket",
+    "chance",
+    "dice-key",
+    "giant-dice",
+}
 
-for i,v in pairs(BoardUtil.ChanceTile) do
-    table.insert(BoardItems, v.DisplayName)
-end
+local BoardItemConversion = {
+    ["infinity"] = "Infinity Elixir",
+    ["golden-dice"] = "Golden Dice",
+    ["giant-dice"] = "Giant Dice",
+    ["dice"] = "Dice",
+    ["special-egg"] = "Special Egg",
+    ["super-ticket"] = "Super Ticket",
+    ["chance"] = "Chance",
+    ["dice-key"] = "Dice Key",
+}
 
 -- script
 
@@ -86,11 +103,11 @@ local function GetPetIndex()
 end
 
 local function ConvertTileType(Tile)
-    local ConvertedName
+    local ConvertedName = "unknown"
 
-    for i,v in pairs(BoardUtil.ChanceTile) do
-        if i == Tile then
-            ConvertedName = v.DisplayName
+    for i,v in pairs(BoardItemConversion) do
+        if table.find(BoardItems, Tile) then
+            ConvertedName = BoardItemConversion[Tile]
             break
         end
     end
@@ -113,11 +130,16 @@ spawn(function()
                 end
             end
 
+            local Called
+
             if IsInRange then
-                Index += RemoteFunction:InvokeServer("RollDice", "Golden Dice").Roll
+                Called = RemoteFunction:InvokeServer("RollDice", "Golden Dice")
             else
-                Index += RemoteFunction:InvokeServer("RollDice", AutoDicePrefered).Roll
+                Called = RemoteFunction:InvokeServer("RollDice", AutoDicePrefered)
             end
+
+            wait(0.5)
+            Index += Called.Roll
 
             if Index > 88 then
                 Index -= 88
@@ -125,7 +147,7 @@ spawn(function()
 
             Board.Pieces[Player.Name].move(Index)
             RemoteEvent:FireServer("ClaimTile")
-            wait(1)
+            wait(0.5)
         end
     end
 end)
